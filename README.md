@@ -1,4 +1,4 @@
-```markdown
+
 # Distributed Order Processing System
 
 A microservices-based order processing system built with Spring Boot, demonstrating service decomposition, inter-service communication via REST APIs, and JWT-based authentication.
