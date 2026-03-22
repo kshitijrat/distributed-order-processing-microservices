@@ -156,4 +156,3 @@ distributed-order-processing-system/
 - Inventory management with stock validation before order placement
 - Centralized routing via API Gateway
 - API documentation with Swagger
-```
