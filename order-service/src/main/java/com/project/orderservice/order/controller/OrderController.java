@@ -1,8 +1,7 @@
 package com.project.orderservice.order.controller;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.project.orderservice.order.entity.Order;
@@ -22,13 +21,13 @@ public class OrderController {
     // Place Order
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
-        return orderService.createOrder(order);
+        return orderService.placeOrder(order);
     }
 
     // Get Order by ID
     @GetMapping("/{id}")
     public Optional<Order> getOrderById(@PathVariable Long id) {
-        return orderService.getOrderById(id);
+        return orderService.getOrder(id);
     }
 
     // Get Orders by User
@@ -39,8 +38,9 @@ public class OrderController {
 
     // Update Order Status (for payment module)
     @PutMapping("/{id}/status")
-    public Order updateStatus(@PathVariable Long id,
-                              @RequestParam OrderStatus status) {
-        return orderService.updateOrderStatus(id, status);
+    public ResponseEntity<?> updateStatus(@PathVariable Long id,
+            @RequestParam String status) {
+        orderService.updateOrderStatus(id, status);
+        return ResponseEntity.ok("Status updated");
     }
 }
