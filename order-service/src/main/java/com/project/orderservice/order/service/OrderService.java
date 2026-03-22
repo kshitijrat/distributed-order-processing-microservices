@@ -22,15 +22,28 @@ public class OrderService {
     @Value("${payment.service.url}")
     private String paymentServiceUrl;
 
+    @Value("${inventory.service.url}")
+    private String inventoryServiceUrl;
+
     public Order placeOrder(Order order) {
+        // Step 1: Inventory check
+        String checkUrl = inventoryServiceUrl + "/api/inventory/check?productId="
+                + order.getProductId() + "&quantity=" + order.getQuantity();
+        Boolean stockAvailable = restTemplate.getForObject(checkUrl, Boolean.class);
+
+        if (!stockAvailable) {
+            throw new RuntimeException("Stock not available");
+        }
+
+        // Step 2: Order save
         order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
 
-        // Payment Service ko call karo
-        String url = paymentServiceUrl + "/api/payment-processor/pay?orderId="
+        // Step 3: Payment trigger
+        String payUrl = paymentServiceUrl + "/api/payment-processor/pay?orderId="
                 + saved.getId() + "&amount=" + saved.getTotalAmount();
-        restTemplate.postForObject(url, null, String.class);
+        restTemplate.postForObject(payUrl, null, String.class);
 
         return saved;
     }

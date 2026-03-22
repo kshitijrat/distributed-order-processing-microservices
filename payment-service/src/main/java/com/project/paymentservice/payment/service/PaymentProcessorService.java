@@ -24,6 +24,9 @@ public class PaymentProcessorService {
     @Value("${order.service.url}")
     private String orderServiceUrl;
 
+    @Value("${inventory.service.url}")
+    private String inventoryServiceUrl;
+
     private static final int MAX_RETRY = 3;
 
     public PaymentTransaction initiatePayment(Long orderId, Double amount) {
@@ -52,6 +55,7 @@ public class PaymentProcessorService {
             txn.setStatus(PaymentStatus.FAILED_FINAL);
             txn.setFailureReason("Fraud detected");
             updateOrderStatus(txn.getOrderId(), "FAILED");
+            reduceInventory(txn.getOrderId());
         } else if (paymentSuccess) {
             txn.setStatus(PaymentStatus.SUCCESS);
             updateOrderStatus(txn.getOrderId(), "CONFIRMED");
@@ -62,6 +66,20 @@ public class PaymentProcessorService {
         txn.setUpdatedAt(LocalDateTime.now());
         return transactionRepository.save(txn);
     }
+
+
+    private void reduceInventory(Long orderId) {
+    String orderUrl = orderServiceUrl + "/api/orders/" + orderId;
+    // Order se productId aur quantity lo
+    java.util.Map order = restTemplate.getForObject(orderUrl, java.util.Map.class);
+    
+    Long productId = Long.valueOf(order.get("productId").toString());
+    Integer quantity = Integer.valueOf(order.get("quantity").toString());
+
+    String url = inventoryServiceUrl + "/api/inventory/reduce?productId=" 
+               + productId + "&quantity=" + quantity;
+    restTemplate.put(url, null);
+}
 
     private PaymentTransaction retryPayment(PaymentTransaction txn) {
         int retry = txn.getRetryCount() + 1;

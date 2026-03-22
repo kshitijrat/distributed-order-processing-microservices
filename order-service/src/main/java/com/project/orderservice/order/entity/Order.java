@@ -20,7 +20,8 @@ public class Order {
 
     // Microservice friendly (no direct relation)
     private Long userId;
-
+     private Long productId;   
+    private Integer quantity;
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
